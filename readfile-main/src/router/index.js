@@ -6,7 +6,7 @@ import OverseasUsage from '../views/OverseasUsage.vue'
 import DeclassifyLog from '../views/DeclassifyLog.vue'
 
 const routes = [
-  { path: '/', redirect: '/logs/web' },
+  { path: '/logs', redirect: '/logs/web' },
   { path: '/logs/web', component: UploadAndParseText },
   { path: '/logs/tuwang', component: TuWangBehaviorUpload },
   { path: '/logs/tuwang-offline', component: TuWangLogOff },

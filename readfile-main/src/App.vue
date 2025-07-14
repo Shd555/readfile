@@ -6,8 +6,20 @@
 
       <!-- 顶部栏 -->
       <el-header class="header">
-        <h3>网络流量分析识别系统</h3>
+        <div class="header-left">
+          <span class="title">网络流量分析识别系统</span>
+        </div>
+        <div class="header-right">
+          <el-button
+            icon="Menu"
+            circle
+            size="small"
+            class="toggle-button"
+            @click="isCollapse = !isCollapse"
+          />
+        </div>
       </el-header>
+
 
       <!-- 中间区域：侧边栏 + 主内容区域 -->
       <el-container class="full-height">
@@ -17,6 +29,7 @@
           <el-menu
             :default-active="$route.path"
             :collapse="isCollapse"
+            :collapse-transition="false"  
             router
             background-color="#1E282D"
             text-color="#ffffff"
@@ -69,7 +82,8 @@
 import { ref } from 'vue'
 
 // 引入 Element Plus 图标
-import { Document, Menu as IconMenu, Location, Setting } from '@element-plus/icons-vue'
+import { Document, Menu as IconMenu, Location, Setting ,Menu} from '@element-plus/icons-vue'
+
 
 // 折叠菜单栏状态
 const isCollapse = ref(false)
@@ -98,6 +112,29 @@ const isCollapse = ref(false)
   font-size: 1rem;
   height: 50px;
   line-height: 60px;
+}
+.header-left .title {
+  font-weight: bold;
+  line-height: 1; /* 避免影响居中 */
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.toggle-button:hover {
+  /* background-color: rgba(255, 255, 255, 0.2); */
+  background-color: rgba(0, 0, 0, 0.1);
+  color: #fff;
+}
+
+.toggle-button {
+  position: absolute;
+  left: 230px; 
+  top: 35px;
+  transform: translateY(-50%);
+  transition: background-color 0.3s ease;
 }
 
 /* 侧边栏样式 */
