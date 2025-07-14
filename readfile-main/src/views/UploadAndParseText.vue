@@ -1,7 +1,5 @@
 <template>
   <div class="container">
-
-
     <!-- <div class="page-header">
       <h2> 网站访问行为</h2>
     </div> -->
@@ -23,26 +21,32 @@
         结束时间：<input type="date" v-model="WebAccessLogDTO.end" />
       </label>
       <label>
-        手机号：<input type="text" 
-        v-model="WebAccessLogDTO.phoneNumber" 
-        placeholder="模糊匹配" />
+        手机号：<input
+          type="text"
+          v-model="WebAccessLogDTO.phoneNumber"
+          placeholder="模糊匹配"
+        />
       </label>
-      <el-button size="small" type="primary" class="export-btn" @click="choose">筛选</el-button>
-      <el-button 
-      size="small" 
-      type="primary" 
-      class="export-btn" 
-      @click="exportToCSV"
-      >导出</el-button>
+      <el-button size="small" type="primary" class="export-btn" @click="choose"
+        >筛选</el-button
+      >
+      <el-button
+        size="small"
+        type="primary"
+        class="export-btn"
+        @click="exportToCSV"
+        >导出</el-button
+      >
     </div>
 
-    <label class="custom-upload-btn">点击选择文件
-        <input type="file" accept=".txt" @change="onFileChange" hidden />
+    <label class="custom-upload-btn"
+      >点击选择文件
+      <input type="file" accept=".txt" @change="onFileChange" hidden />
     </label>
 
     <!-- 表格展示 -->
     <div class="table-wrapper">
-        <!-- <el-table
+      <!-- <el-table
           :key="tableKey"
           :data="tableData"
           height="calc(100vh - 230px)"
@@ -59,10 +63,10 @@
             :label="header"
           />
         </el-table> -->
-        <el-table
+      <el-table
         :key="tableKey"
         :data="tableData"
-        height="calc(100vh - 230px)"
+        height="550px"
         border
         style="width: 100%"
         :header-cell-style="{ background: '#f5f7fa', fontWeight: 'bold' }"
@@ -84,7 +88,7 @@
           layout="prev, pager, next, sizes, total,jumper"
           :current-page="WebAccessLogDTO.page"
           :page-size="WebAccessLogDTO.pageSize"
-          :total="total.value"
+          :total="total"
           @current-change="handleCurrentChange"
           @size-change="handleSizeChange"
         />
@@ -168,7 +172,7 @@ const handleSizeChange = (newSize) => {
 };
 
 const choose = () => {
-  WebAccessLogDTO.page = 1 // 重置页码
+  WebAccessLogDTO.page = 1; // 重置页码
   fetchWebAccessLogs();
 };
 
@@ -245,9 +249,6 @@ const onFileChange = async (e) => {
     fetchWebAccessLogs(); // 上传成功后刷新列表
   } catch (err) {}
 };
-
-
-
 </script>
 
 <style scoped>
@@ -257,7 +258,7 @@ const onFileChange = async (e) => {
   height: 100vh;
   padding: 1rem;
   box-sizing: border-box;
-  overflow: hidden;
+  overflow: auto;
 }
 
 .breadcrumb-wrapper {
@@ -267,7 +268,6 @@ const onFileChange = async (e) => {
   border-radius: 6px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
-
 
 .page-header {
   margin-bottom: 0px;
@@ -306,7 +306,7 @@ const onFileChange = async (e) => {
 .custom-upload-btn {
   display: inline-block;
   padding: 10px 20px;
-  background-color: #409EFF;
+  background-color: #409eff;
   color: #fff;
   cursor: pointer;
   border-radius: 10px;
