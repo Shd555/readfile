@@ -1,34 +1,20 @@
 <template>
   <div class="container">
-    <div class="page-header">
-      <h1> 网站访问行为</h1>
-    </div>
-    <!-- 过滤条件 -->
-    <!-- <div class="filter-box">
-      <label>
-        开始时间：<input type="date" v-model="WebAccessLogDTO.begin" />
-      </label>
-      <label>
-        结束时间：<input type="date" v-model="WebAccessLogDTO.end" />
-      </label>
-      <label style="margin-left: 10px">
-        手机号：<input
-          type="text"
-          v-model="WebAccessLogDTO.phoneNumber"
-          placeholder="模糊匹配"
-        />
-      </label>
-      <el-button size="small" style="margin-left: 10px" @click="choose"
-        >筛选</el-button
-      >
-      <el-button
-        size="small"
-        type="primary"
-        @click="exportToCSV"
-        style="margin-left: 10px"
-        >导出</el-button
-      >
+
+
+    <!-- <div class="page-header">
+      <h2> 网站访问行为</h2>
     </div> -->
+    <div class="breadcrumb-wrapper">
+      <el-breadcrumb separator-icon="ArrowRight">
+        <el-breadcrumb-item :to="{ path: '/' }">
+          <el-icon class="home-icon"><House /></el-icon>
+          日志管理
+        </el-breadcrumb-item>
+        <el-breadcrumb-item>网站访问行为</el-breadcrumb-item>
+      </el-breadcrumb>
+    </div>
+
     <div class="filter-box">
       <label>
         开始时间：<input type="date" v-model="WebAccessLogDTO.begin" />
@@ -37,26 +23,26 @@
         结束时间：<input type="date" v-model="WebAccessLogDTO.end" />
       </label>
       <label>
-        手机号：<input type="text" v-model="WebAccessLogDTO.phoneNumber" placeholder="模糊匹配" />
+        手机号：<input type="text" 
+        v-model="WebAccessLogDTO.phoneNumber" 
+        placeholder="模糊匹配" />
       </label>
-      <el-button size="small" class="filter-btn" @click="choose">筛选</el-button>
-      <el-button size="small" type="primary" class="export-btn" @click="exportToCSV">导出</el-button>
+      <el-button size="small" type="primary" class="export-btn" @click="choose">筛选</el-button>
+      <el-button 
+      size="small" 
+      type="primary" 
+      class="export-btn" 
+      @click="exportToCSV"
+      >导出</el-button>
     </div>
 
-
-    <!-- 文件上传 -->
-    <!-- <input type="file" accept=".txt" @change="onFileChange" /> -->
     <label class="custom-upload-btn">点击选择文件
         <input type="file" accept=".txt" @change="onFileChange" hidden />
     </label>
 
-    <!-- 上传状态 -->
-    <!-- <p v-if="uploading">正在上传...</p>
-    <p v-if="uploadError" class="error">{{ uploadError }}</p> -->
-
     <!-- 表格展示 -->
     <div class="table-wrapper">
-        <el-table
+        <!-- <el-table
           :key="tableKey"
           :data="tableData"
           height="calc(100vh - 230px)"
@@ -72,27 +58,35 @@
             :prop="fields[index]"
             :label="header"
           />
-        </el-table>
-
-
-
-      <!-- <el-table :key="tableKey" :data="tableData" style="width: 100%">
+        </el-table> -->
+        <el-table
+        :key="tableKey"
+        :data="tableData"
+        height="calc(100vh - 230px)"
+        border
+        style="width: 100%"
+        :header-cell-style="{ background: '#f5f7fa', fontWeight: 'bold' }"
+        :cell-style="{ whiteSpace: 'nowrap' }"
+        :highlight-current-row="true"
+      >
         <el-table-column
           v-for="(header, index) in headers"
           :key="index"
           :prop="fields[index]"
           :label="header"
         />
-      </el-table> -->
-      <!-- 分页组件 -->
+      </el-table>
+
+      <!-- 分页 -->
       <div class="pager">
         <el-pagination
           background
-          layout="prev, pager, next"
+          layout="prev, pager, next, sizes, total,jumper"
           :current-page="WebAccessLogDTO.page"
           :page-size="WebAccessLogDTO.pageSize"
           :total="total.value"
           @current-change="handleCurrentChange"
+          @size-change="handleSizeChange"
         />
       </div>
     </div>
@@ -100,10 +94,13 @@
 </template>
 
 <script setup>
-import { ref, computed, reactive } from "vue";
+import { ref, reactive } from "vue";
 import axios from "axios";
 
 const tableKey = ref(0);
+const tableData = ref([]);
+const total = ref(10);
+
 const WebAccessLogDTO = reactive({
   page: 1,
   pageSize: 5,
@@ -112,8 +109,7 @@ const WebAccessLogDTO = reactive({
   begin: "",
   end: "",
 });
-const tableData = ref([]);
-const total = ref(10);
+
 const headers = [
   "时间",
   "手机号",
@@ -158,27 +154,21 @@ const fields = [
   "downBytes",
   "credibility",
 ];
-
-
-
-//分页
-const visibleData = ref([]);
-const updateVisibleData = () => {
-  const start = (WebAccessLogDTO.page - 1) * WebAccessLogDTO.pageSize;
-  const end = start + WebAccessLogDTO.pageSize;
-  visibleData.value = allMockData.value.slice(start, end);
-};
-
 //实际代
 const handleCurrentChange = (newPage) => {
   WebAccessLogDTO.page = newPage;
-  // tableKey.value++
+  fetchWebAccessLogs();
+};
+
+//+++
+const handleSizeChange = (newSize) => {
+  WebAccessLogDTO.pageSize = newSize;
+  WebAccessLogDTO.page = 1;
   fetchWebAccessLogs();
 };
 
 const choose = () => {
-  // WebAccessLogDTO.page = 1 // 重置页码
-  //   tableKey.value++
+  WebAccessLogDTO.page = 1 // 重置页码
   fetchWebAccessLogs();
 };
 
@@ -270,13 +260,22 @@ const onFileChange = async (e) => {
   overflow: hidden;
 }
 
+.breadcrumb-wrapper {
+  margin-bottom: 12px;
+  background: #fff;
+  padding: 10px 16px;
+  border-radius: 6px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+
 .page-header {
-  margin-bottom: 20px;
+  margin-bottom: 0px;
   border-bottom: 2px solid #ebeef5;
   padding-bottom: 10px;
 }
-.page-header h1 {
-  font-size: 24px;
+.page-header h2 {
+  font-size: 20px;
   font-weight: bold;
   color: #303133;
 }

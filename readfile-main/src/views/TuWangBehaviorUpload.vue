@@ -1,9 +1,17 @@
 <template>
   <div class="container">
-    <div class="page-header">
+    <!-- <div class="page-header">
       <h1>突网行为</h1>
+    </div> -->
+    <div class="breadcrumb-wrapper">
+      <el-breadcrumb separator-icon="ArrowRight">
+        <el-breadcrumb-item :to="{ path: '/' }">
+          <el-icon class="home-icon"><House /></el-icon>
+          日志管理
+        </el-breadcrumb-item>
+        <el-breadcrumb-item>突网行为</el-breadcrumb-item>
+      </el-breadcrumb>
     </div>
-
     <!-- 过滤条件 -->
     <div class="filter-box">
       <label>
@@ -18,7 +26,7 @@
       <label>
         流ID：<input type="text" v-model="TunnelAccessLogDTO.flowId" placeholder="模糊匹配" />
       </label>
-      <el-button size="small" class="filter-btn" @click="choose">筛选</el-button>
+      <el-button size="small" type="primary" class="export-btn" @click="choose">筛选</el-button>
       <el-button size="small" type="primary" class="export-btn" @click="exportToCSV">导出</el-button>
     </div>
 
@@ -51,7 +59,7 @@
       <div class="pager">
         <el-pagination
           background
-          layout="prev, pager, next"
+          layout="prev, pager, next, sizes, total,jumper"
           :current-page="TunnelAccessLogDTO.page"
           :page-size="TunnelAccessLogDTO.pageSize"
           :total="total.value"
@@ -67,6 +75,8 @@ import { ref, reactive } from "vue";
 import axios from "axios";
 
 const tableKey = ref(0);
+const tableData = ref([]);
+const total = ref(10);
 const TunnelAccessLogDTO = reactive({
   page: 1,
   pageSize: 5,
@@ -77,23 +87,54 @@ const TunnelAccessLogDTO = reactive({
   end: "",
 });
 
-const tableData = ref([]);
-const total = ref(10);
-
 const headers = [
-  "时间", "流ID", "手机号", "IMSI", "IMEI", "ADSL账号", "客户端IP", "服务器IP",
-  "客户端地区", "服务器地区", "隧道类型", "运营商", "工具", "客户端口", "服务器端口",
-  "上行包大小(Byte)", "下行包大小(Byte)"
+  "时间",
+  "流ID", 
+  "手机号", 
+  "IMSI", 
+  "IMEI", 
+  "ADSL账号", 
+  "客户端IP", 
+  "服务器IP",
+  "客户端地区", 
+  "服务器地区", 
+  "隧道类型", 
+  "运营商", 
+  "工具", 
+  "客户端口", 
+  "服务器端口",
+  "上行包大小(Byte)", 
+  "下行包大小(Byte)"
 ];
 const fields = [
-  "time", "flowId", "phoneNumber", "imsi", "imei", "adslAccount", "clientIp", "serverIp",
-  "clientRegion", "serverRegion", "tunnelType", "operator", "tool", "clientPort", "serverPort",
-  "upBytes", "downBytes"
+  "time", 
+  "flowId", 
+  "phoneNumber", 
+  "imsi", 
+  "imei", 
+  "adslAccount", 
+  "clientIp", 
+  "serverIp",
+  "clientRegion", 
+  "serverRegion", 
+  "tunnelType", 
+  "operator", 
+  "tool", 
+  "clientPort", 
+  "serverPort",
+  "upBytes", 
+  "downBytes"
 ];
 
 const handleCurrentChange = (newPage) => {
   TunnelAccessLogDTO.page = newPage;
   fetchTunnelAccessLogs();
+};
+//+++
+const handleSizeChange = (newSize) => {
+  TunnelAccessLogDTO.pageSize = newSize;
+  WebAccessLogDTO.page = 1;
+  fetchWebAccessLogs();
 };
 
 const choose = () => {
@@ -169,6 +210,13 @@ const onFileChange = async (e) => {
   padding: 1rem;
   box-sizing: border-box;
   overflow: hidden;
+}
+.breadcrumb-wrapper {
+  margin-bottom: 12px;
+  background: #fff;
+  padding: 10px 16px;
+  border-radius: 6px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
 .page-header {

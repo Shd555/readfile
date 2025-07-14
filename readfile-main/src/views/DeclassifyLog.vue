@@ -18,7 +18,7 @@
       <label>
         手机号：<input type="text" v-model="DeclassifyLogDTO.phoneNumber" placeholder="模糊匹配" />
       </label>
-      <el-button size="small" class="filter-btn" @click="fetchDeclassifyLog">筛选</el-button>
+      <el-button size="small" class="filter-btn" @click="choose">筛选</el-button>
       <el-button size="small" type="primary" class="export-btn" @click="exportToCSV">导出</el-button>
     </div>
 
@@ -30,8 +30,9 @@
     <!-- 表格展示 -->
     <div class="table-wrapper">
       <el-table
+        :key="tableKey"
         :data="tableData"
-        height="calc(100vh - 250px)"
+        height="calc(100vh - 230px)"
         border
         style="width: 100%"
         :header-cell-style="{ background: '#f5f7fa', fontWeight: 'bold' }"
@@ -45,6 +46,16 @@
           :label="header"
         />
       </el-table>
+      <div class="pager">
+        <el-pagination
+          background
+          layout="prev, pager, next"
+          :current-page="DeclassifyLogDTO.page"
+          :page-size="DeclassifyLogDTO.pageSize"
+          :total="total.value"
+          @current-change="handleCurrentChange"
+        />
+      </div>
     </div>
   </div>
 </template>
@@ -60,8 +71,8 @@ const total = ref(10);
 const DeclassifyLogDTO = reactive({
   page: 1,
   pageSize: 5,
-  uid: null,
-  flowId: null,
+  uid: "",
+  flowId: "",
   phoneNumber: "",
   begin: "",
   end: "",
@@ -109,6 +120,25 @@ const fields = [
   "hostName",
 ];
 
+//分页
+const visibleData = ref([]);
+const updateVisibleData = () => {
+  const start = (WebAccessLogDTO.page - 1) * WebAccessLogDTO.pageSize;
+  const end = start + WebAccessLogDTO.pageSize;
+  visibleData.value = allMockData.value.slice(start, end);
+};
+
+const handleCurrentChange = (newPage) => {
+  DeclassifyLogDTO.page = newPage;
+  // tableKey.value++
+  fetchDeclassifyLogs();
+};
+
+const choose = () => {
+  // WebAccessLogDTO.page = 1 // 重置页码
+  //   tableKey.value++
+  fetchDeclassifyLogs();
+};
 const fetchDeclassifyLog = async () => {
   try {
     const res = await axios.post("http://localhost:8080/DeclassifyLog/list", DeclassifyLogDTO);
@@ -167,7 +197,6 @@ const onFileChange = async (e) => {
     DeclassifyLogDTO.uid = res.data.data;
     fetchDeclassifyLog();
   } catch (err) {
-    console.error("上传失败", err);
   }
 };
 </script>
@@ -225,6 +254,13 @@ const onFileChange = async (e) => {
 }
 .table-wrapper {
   flex: 1;
-  overflow: auto;
+}
+.pager {
+  margin-top: 10px;
+  text-align: right;
+}
+.error {
+  color: red;
+  margin-top: 0.5rem;
 }
 </style>
