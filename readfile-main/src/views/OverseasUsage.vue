@@ -1,7 +1,13 @@
 <template>
   <div class="container">
-    <div class="page-header">
-      <h1>境外app使用行为</h1>
+    <div class="breadcrumb-wrapper">
+      <el-breadcrumb separator-icon="ArrowRight">
+        <el-breadcrumb-item :to="{ path: '/' }">
+          <el-icon class="home-icon"><House /></el-icon>
+          日志管理
+        </el-breadcrumb-item>
+        <el-breadcrumb-item>境外app使用行为</el-breadcrumb-item>
+      </el-breadcrumb>
     </div>
 
     <!-- 过滤条件 -->
@@ -15,7 +21,7 @@
       <label>
         手机号：<input type="text" v-model="ForeignAppAccessLogDTO.phoneNumber" placeholder="模糊匹配" />
       </label>
-      <el-button size="small" class="filter-btn" @click="choose">筛选</el-button>
+      <el-button size="small" type="primary" class="export-btn" @click="choose">筛选</el-button>
       <el-button size="small" type="primary" class="export-btn" @click="exportToCSV">导出</el-button>
     </div>
 
@@ -29,7 +35,7 @@
       <el-table
         :key="tableKey"
         :data="tableData"
-        height="calc(100vh - 230px)"
+        height="550px"
         border
         style="width: 100%"
         :header-cell-style="{ background: '#f5f7fa', fontWeight: 'bold' }"
@@ -42,17 +48,33 @@
           :prop="fields[index]"
           :label="header"
         />
+        <!-- 新增序号列，跨页连续编号 -->
+        <el-table-column
+          type="index"
+          :index="indexMethod"
+          label="序号"
+          width="60"
+          align="center"
+        />
+        <!-- 动态生成其余列 -->
+        <el-table-column
+          v-for="(header, index) in headers"
+          :key="index"
+          :prop="fields[index]"
+          :label="header"
+        />
       </el-table>
 
       <!-- 分页组件 -->
       <div class="pager">
         <el-pagination
           background
-          layout="prev, pager, next"
+          layout="prev, pager, next, sizes, total,jumper"
           :current-page="ForeignAppAccessLogDTO.page"
           :page-size="ForeignAppAccessLogDTO.pageSize"
-          :total="total.value"
+          :total="total"
           @current-change="handleCurrentChange"
+          @size-change="handleSizeChange"
         />
       </div>
     </div>
@@ -64,6 +86,9 @@ import { ref, reactive } from "vue";
 import axios from "axios";
 
 const tableKey = ref(0);
+const tableData = ref([]);
+const total = ref(10);
+
 const ForeignAppAccessLogDTO = reactive({
   page: 1,
   pageSize: 5,
@@ -73,8 +98,6 @@ const ForeignAppAccessLogDTO = reactive({
   end: "",
 });
 
-const tableData = ref([]);
-const total = ref(10);
 const headers = [
   "时间",
   "手机号",
@@ -96,12 +119,24 @@ const fields = [
   "appName",
 ];
 
+//+++
+/** 序号生成函数：保持跨页连续编号 */
+const indexMethod = (index) =>
+  (WebAccessLogDTO.page - 1) * WebAccessLogDTO.pageSize + index + 1;
+
 const handleCurrentChange = (newPage) => {
   ForeignAppAccessLogDTO.page = newPage;
   fetchForeignAppAccessLogs();
 };
 
+const handleSizeChange = (newSize) => {
+  WebAccessLogDTO.pageSize = newSize;
+  WebAccessLogDTO.page = 1;
+  fetchWebAccessLogs();
+};
+
 const choose = () => {
+  WebAccessLogDTO.page = 1; // 重置页码
   fetchForeignAppAccessLogs();
 };
 
@@ -182,18 +217,14 @@ const onFileChange = async (e) => {
   height: 100vh;
   padding: 1rem;
   box-sizing: border-box;
-  overflow: hidden;
+  overflow: auto;
 }
-
-.page-header {
-  margin-bottom: 20px;
-  border-bottom: 2px solid #ebeef5;
-  padding-bottom: 10px;
-}
-.page-header h1 {
-  font-size: 24px;
-  font-weight: bold;
-  color: #303133;
+.breadcrumb-wrapper {
+  margin-bottom: 12px;
+  background: #fff;
+  padding: 10px 16px;
+  border-radius: 6px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
 .filter-box {

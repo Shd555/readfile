@@ -132,7 +132,7 @@
   .toggle-button {
     position: absolute;
     left: 230px; 
-    top: 25px;
+    top: 33px;
     transform: translateY(-50%);
     transition: background-color 0.3s ease;
   }

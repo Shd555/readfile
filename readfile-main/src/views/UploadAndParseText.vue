@@ -1,8 +1,5 @@
 <template>
   <div class="container">
-    <!-- <div class="page-header">
-      <h2> 网站访问行为</h2>
-    </div> -->
     <div class="breadcrumb-wrapper">
       <el-breadcrumb separator-icon="ArrowRight">
         <el-breadcrumb-item :to="{ path: '/' }">
@@ -62,7 +59,6 @@
           :prop="fields[index]"
           :label="header"
         />
-
 
         <!-- 新增序号列，跨页连续编号 -->
         <el-table-column
@@ -276,17 +272,6 @@ const onFileChange = async (e) => {
   padding: 10px 16px;
   border-radius: 6px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-}
-
-.page-header {
-  margin-bottom: 0px;
-  border-bottom: 2px solid #ebeef5;
-  padding-bottom: 10px;
-}
-.page-header h2 {
-  font-size: 20px;
-  font-weight: bold;
-  color: #303133;
 }
 
 .filter-box {

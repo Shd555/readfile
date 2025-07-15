@@ -40,13 +40,28 @@
       <el-table
         :key="tableKey"
         :data="tableData"
-        height="calc(100vh - 230px)"
+        height="550px"
         border
         style="width: 100%"
         :header-cell-style="{ background: '#f5f7fa', fontWeight: 'bold' }"
         :cell-style="{ whiteSpace: 'nowrap' }"
         :highlight-current-row="true"
       >
+        <el-table-column
+          v-for="(header, index) in headers"
+          :key="index"
+          :prop="fields[index]"
+          :label="header"
+        />
+        <!-- 新增序号列，跨页连续编号 -->
+        <el-table-column
+          type="index"
+          :index="indexMethod"
+          label="序号"
+          width="60"
+          align="center"
+        />
+        <!-- 动态生成其余列 -->
         <el-table-column
           v-for="(header, index) in headers"
           :key="index"
@@ -62,8 +77,9 @@
           layout="prev, pager, next, sizes, total,jumper"
           :current-page="TunnelAccessLogDTO.page"
           :page-size="TunnelAccessLogDTO.pageSize"
-          :total="total.value"
+          :total="total"
           @current-change="handleCurrentChange"
+          @size-change="handleSizeChange"
         />
       </div>
     </div>
@@ -77,6 +93,7 @@ import axios from "axios";
 const tableKey = ref(0);
 const tableData = ref([]);
 const total = ref(10);
+
 const TunnelAccessLogDTO = reactive({
   page: 1,
   pageSize: 5,
@@ -126,6 +143,12 @@ const fields = [
   "downBytes"
 ];
 
+//+++
+/** 序号生成函数：保持跨页连续编号 */
+const indexMethod = (index) =>
+  (WebAccessLogDTO.page - 1) * WebAccessLogDTO.pageSize + index + 1;
+
+
 const handleCurrentChange = (newPage) => {
   TunnelAccessLogDTO.page = newPage;
   fetchTunnelAccessLogs();
@@ -138,12 +161,15 @@ const handleSizeChange = (newSize) => {
 };
 
 const choose = () => {
+  WebAccessLogDTO.page = 1; // 重置页码
   fetchTunnelAccessLogs();
 };
 
 const fetchTunnelAccessLogs = async () => {
   try {
-    const res = await axios.post("http://localhost:8080/TunnelAccessLog/list", TunnelAccessLogDTO);
+    const res = await axios.post("http://localhost:8080/TunnelAccessLog/list", 
+    TunnelAccessLogDTO
+    );
     tableData.value = res.data.data.records;
     total.value = res.data.data.total;
     tableKey.value++;
@@ -152,6 +178,7 @@ const fetchTunnelAccessLogs = async () => {
   }
 };
 
+//导出
 const exportToCSV = async () => {
   try {
     const response = await axios.post(
@@ -209,7 +236,7 @@ const onFileChange = async (e) => {
   height: 100vh;
   padding: 1rem;
   box-sizing: border-box;
-  overflow: hidden;
+  overflow: auto;
 }
 .breadcrumb-wrapper {
   margin-bottom: 12px;
@@ -271,5 +298,9 @@ const onFileChange = async (e) => {
 .pager {
   margin-top: 10px;
   text-align: right;
+}
+.error {
+  color: red;
+  margin-top: 0.5rem;
 }
 </style>
