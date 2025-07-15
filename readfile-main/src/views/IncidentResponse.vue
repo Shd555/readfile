@@ -3,7 +3,7 @@
       <!-- 面包屑导航（独立顶栏） -->
       <header class="breadcrumb-wrapper">
         <el-breadcrumb separator-icon="ArrowRight">
-          <el-breadcrumb-item :to="{ path: '/' }">
+            <el-breadcrumb-item :to="{ path: '/dashboard/overview' }">
             <el-icon class="home-icon"><House /></el-icon>
             翻墙监控驾驶舱
           </el-breadcrumb-item>

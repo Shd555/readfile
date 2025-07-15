@@ -5,7 +5,7 @@
     </div> -->
     <div class="breadcrumb-wrapper">
       <el-breadcrumb separator-icon="ArrowRight">
-        <el-breadcrumb-item :to="{ path: '/' }">
+        <el-breadcrumb-item :to="{ path: '/logs/web' }">
           <el-icon class="home-icon"><House /></el-icon>
           日志管理
         </el-breadcrumb-item>
