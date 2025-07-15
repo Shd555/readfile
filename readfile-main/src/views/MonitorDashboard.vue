@@ -10,7 +10,15 @@
           <el-breadcrumb-item>驾驶舱总览</el-breadcrumb-item>
           <span class="timestamp">{{ now }}</span>
         </el-breadcrumb>
+        
       </header>
+      <div class="export-bar">
+  <el-button size="small" type="primary" @click="exportUsers">
+    <el-icon><Download /></el-icon>
+    导出用户信息
+  </el-button>
+</div>
+
   
       <!-- 实时统计卡片 -->
       <el-row :gutter="20" class="metrics-row">
@@ -102,6 +110,17 @@
   const now = ref(new Date().toLocaleString());
   setInterval(() => (now.value = new Date().toLocaleString()), 1_000);
   
+  function exportUsers() {
+  const header = '时间,用户,IP地址,翻墙类型\n';
+  const rows = recentEvents.value.map(u => `${u.time},${u.user},${u.ip},${u.category}`).join('\n');
+  const blob = new Blob([header + rows], { type: 'text/csv' });
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = `user-info-${new Date().toISOString().slice(0, 10)}.csv`;
+  link.click();
+  URL.revokeObjectURL(link.href);
+}
+
   /* 实时统计数据 */
   const metrics = ref([
     { label: '实时会话数', value: 120 },
@@ -302,6 +321,12 @@
     border-radius: 6px;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
   }
+  .export-bar {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 12px;
+}
+
   .timestamp {
     font-size: 0.875rem;
     color: #666;
