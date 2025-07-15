@@ -4,6 +4,8 @@ import TuWangBehaviorUpload from '../views/TuWangBehaviorUpload.vue'
 import TuWangLogOff from '../views/TuWangLogOff.vue'
 import OverseasUsage from '../views/OverseasUsage.vue'
 import DeclassifyLog from '../views/DeclassifyLog.vue'
+import MonitorDashboard from '../views/MonitorDashboard.vue'
+
 
 const routes = [
   { path: '/logs', redirect: '/logs/web' },
@@ -12,6 +14,7 @@ const routes = [
   { path: '/logs/tuwang-offline', component: TuWangLogOff },
   { path: '/logs/overseas', component: OverseasUsage },
   { path: '/logs/declassify', component: DeclassifyLog },
+  { path: '/dashboard',component: MonitorDashboard,},
   { path: '/users', component: { template: '<div>用户管理模块</div>' } },
   { path: '/system/logs', component: { template: '<div>系统日志模块</div>' } },
   { path: '/settings', component: { template: '<div>系统设置模块</div>' } },

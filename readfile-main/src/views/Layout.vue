@@ -47,11 +47,17 @@
                 <el-menu-item index="/logs/overseas" class="sub-menu-item">境外app使用行为</el-menu-item>
                 <el-menu-item index="/logs/declassify" class="sub-menu-item">解密数据</el-menu-item>
               </el-sub-menu>
+
+              <!-- 翻墙监控驾驶舱 -->
+              <!-- <el-menu-item index="/dashboard">
+                <el-icon><Monitor /></el-icon>
+                <span>翻墙监控驾驶舱</span>
+              </el-menu-item> -->
   
               <!-- 用户管理 -->
-              <el-menu-item index="/users">
+              <el-menu-item index="/dashboard">
                 <el-icon><IconMenu /></el-icon>
-                <span>设备接入管理</span>
+                <span>翻墙监控驾驶舱</span>
               </el-menu-item>
   
               <!-- 系统日志 -->
@@ -82,7 +88,7 @@
   import { ref } from 'vue'
   
   // 引入 Element Plus 图标
-  import { Document, Menu as IconMenu, Location, Setting ,Menu} from '@element-plus/icons-vue'
+  import { Document, Menu as IconMenu, Location, Setting , Monitor ,Menu} from '@element-plus/icons-vue'
   
   
   // 折叠菜单栏状态
