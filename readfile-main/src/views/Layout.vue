@@ -52,13 +52,21 @@
               <!-- <el-menu-item index="/dashboard">
                 <el-icon><Monitor /></el-icon>
                 <span>翻墙监控驾驶舱</span>
-              </el-menu-item> -->
-  
-              <!-- 用户管理 -->
-              <el-menu-item index="/dashboard">
-                <el-icon><IconMenu /></el-icon>
-                <span>翻墙监控驾驶舱</span>
-              </el-menu-item>
+              </el-menu-item>-->
+              <!-- 翻墙监控驾驶舱子菜单 -->
+              <el-sub-menu index="/dashboard">
+                <template #title>
+                  <el-icon><Monitor /></el-icon>
+                  <span>翻墙监控驾驶舱</span>
+                </template>
+                <el-menu-item index="/dashboard/overview" class="sub-menu-item">驾驶舱总览</el-menu-item>
+                <!-- <el-menu-item index="/dashboard/behavior" class="sub-menu-item">行为分类分析</el-menu-item> -->
+                <el-menu-item index="/dashboard/realtime" class="sub-menu-item">实时监控</el-menu-item>
+                <el-menu-item index="/dashboard/response" class="sub-menu-item">联动与处置</el-menu-item>
+                <el-menu-item index="/dashboard/policy" class="sub-menu-item">策略与黑白名单</el-menu-item>
+                <el-menu-item index="/dashboard/profile" class="sub-menu-item">用户画像</el-menu-item>
+              </el-sub-menu>
+
   
               <!-- 系统日志 -->
               <el-menu-item index="/system/logs">
