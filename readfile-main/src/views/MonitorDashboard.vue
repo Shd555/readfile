@@ -111,8 +111,8 @@
   setInterval(() => (now.value = new Date().toLocaleString()), 1_000);
   
   function exportUsers() {
-  const header = '时间,用户,IP地址,翻墙类型\n';
-  const rows = recentEvents.value.map(u => `${u.time},${u.user},${u.ip},${u.category}`).join('\n');
+  const header = '时间,用户,IP地址,翻墙类型,访问类型，所属学院\n';
+  const rows = recentEvents.value.map(u => `${u.time},${u.user},${u.ip},${u.category},${u.pie},${u.college}`).join('\n');
   const blob = new Blob([header + rows], { type: 'text/csv' });
   const link = document.createElement('a');
   link.href = URL.createObjectURL(blob);
@@ -131,9 +131,9 @@
   
   /* 事件列表示例数据 */
   const recentEvents = ref([
-    { time: '2025-07-15 14:00', user: '张三', ip: '10.1.2.3', category: 'VPN' },
-    { time: '2025-07-15 13:55', user: '李四', ip: '10.1.4.5', category: 'TOR' },
-    { time: '2025-07-15 13:50', user: '王五', ip: '10.1.6.7', category: 'HTTP Proxy' },
+    { time: '2025-07-15 14:00', user: '张三', ip: '10.1.2.3', category: 'VPN' ,pie:'涉恐',college:"计算机学院"},
+    { time: '2025-07-15 13:55', user: '李四', ip: '10.1.4.5', category: 'TOR',pie:'涉暴',college:"外语学院" },
+    { time: '2025-07-15 13:50', user: '王五', ip: '10.1.6.7', category: 'HTTP Proxy',pie:'涉政',college:"体育学院" },
   ]);
   
   /* Chart refs */
@@ -358,4 +358,3 @@
     border: 1px solid #dcdfe6 !important;
   }
   </style>
-  
