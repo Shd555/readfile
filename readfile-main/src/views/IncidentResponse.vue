@@ -1,171 +1,270 @@
 <template>
-    <div class="incident-response-wrapper">
-      <!-- 面包屑导航（独立顶栏） -->
-      <header class="breadcrumb-wrapper">
-        <el-breadcrumb separator-icon="ArrowRight">
-            <el-breadcrumb-item :to="{ path: '/dashboard/overview' }">
-            <el-icon class="home-icon"><House /></el-icon>
-            翻墙监控驾驶舱
-          </el-breadcrumb-item>
-          <el-breadcrumb-item>联动与处置</el-breadcrumb-item>
-        </el-breadcrumb>
-      </header>
-  
-      <!-- 主体内容区 -->
-      <div class="incident-response">
-        <!-- 在线用户搜索栏 -->
-        <el-input
-          v-model="searchQuery"
-          placeholder="输入用户名 / IP / 账号 搜索在线用户"
-          clearable
-          style="max-width: 360px; margin-bottom: 16px;"
-          @keyup.enter="fetchOnlineUsers"
-        >
-          <template #append>
-            <el-button @click="fetchOnlineUsers" icon="Search" />
-          </template>
-        </el-input>
-  
-        <!-- 在线用户列表 -->
-        <el-table :data="onlineUsers" stripe style="width: 100%" height="300" @row-click="selectUser">
-          <el-table-column prop="username" label="用户名" width="140" />
-          <el-table-column prop="ip" label="IP 地址" width="180" />
-          <el-table-column prop="device" label="设备" />
-          <el-table-column prop="status" label="状态" width="120" />
-        </el-table>
-  
-        <!-- 操作台 -->
-        <div v-if="activeUser" class="action-panel">
-          <h3>当前选择：{{ activeUser.username }} ({{ activeUser.ip }})</h3>
-          <el-button type="danger" @click="disconnectUser" :loading="loading.disconnect">下线用户</el-button>
-          <el-select v-model="newPackage" placeholder="选择异常套餐" style="width: 160px; margin: 0 8px;">
-            <el-option label="异常套餐 A" value="pkg_abnormal_a" />
-            <el-option label="异常套餐 B" value="pkg_abnormal_b" />
-          </el-select>
-          <el-button type="warning" @click="updatePackage" :loading="loading.package">修改套餐</el-button>
-          <el-button type="primary" @click="openWarningPreview">预览警示页面</el-button>
-          <el-button @click="openRectification">发起整改</el-button>
-        </div>
-      </div>
-  
-      <!-- 警示页面预览弹窗 -->
-      <el-dialog v-model="warnDialog" title="警示页面预览" width="600">
-        <div class="warning-preview">
-          <h2>⚠️ 翻墙行为警示</h2>
-          <p>用户：{{ activeUser?.username }} ({{ activeUser?.ip }})</p>
-          <p>本月累计翻墙次数：{{ activeUser?.count }}</p>
-          <p>请遵守校园网络管理规定，立即停止翻墙行为。</p>
-        </div>
-        <template #footer>
-          <el-button @click="warnDialog = false">关闭</el-button>
-        </template>
-      </el-dialog>
-  
-      <!-- 整改流程抽屉 -->
-      <el-drawer v-model="rectDrawer" title="发起整改流程" direction="rtl" size="400">
-        <el-form :model="rectForm" label-width="90px">
-          <el-form-item label="整改说明">
-            <el-input v-model="rectForm.remark" type="textarea" rows="4" />
-          </el-form-item>
-          <el-form-item label="截止日期">
-            <el-date-picker v-model="rectForm.deadline" type="date" placeholder="选择日期" />
-          </el-form-item>
-        </el-form>
-        <template #footer>
-          <el-button @click="rectDrawer = false">取消</el-button>
-          <el-button type="primary" @click="submitRectification" :loading="loading.rect">提交</el-button>
-        </template>
-      </el-drawer>
+  <div class="incident-response-wrapper">
+    <!-- 面包屑导航 -->
+    <header class="breadcrumb-wrapper">
+      <el-breadcrumb separator-icon="ArrowRight">
+        <el-breadcrumb-item :to="{ path: '/dashboard/overview' }">
+          <el-icon class="home-icon"><House /></el-icon>
+          翻墙监控驾驶舱
+        </el-breadcrumb-item>
+        <el-breadcrumb-item>联动与处置</el-breadcrumb-item>
+      </el-breadcrumb>
+    </header>
+
+    <!-- 区域筛选 -->
+    <div class="zone-filter" style="margin-bottom: 16px;">
+      <el-radio-group v-model="selectedZone" @change="filterUsers">
+        <el-radio-button label="全部" />
+        <el-radio-button label="教学区" />
+        <el-radio-button label="生活区" />
+      </el-radio-group>
     </div>
-  </template>
-  
-  <script setup>
-  // (保持原有 setup 逻辑不变)
-  import { ref } from 'vue'
-  import { ElMessage } from 'element-plus'
-  
-  const onlineUsers = ref([
-    { username: '张三', ip: '10.1.2.3', device: 'Windows', status: '在线', count: 5 },
-    { username: '李四', ip: '10.1.4.5', device: 'macOS', status: '在线', count: 8 },
-  ])
-  const searchQuery = ref('')
-  const activeUser = ref(null)
-  const newPackage = ref('')
-  const warnDialog = ref(false)
-  const rectDrawer = ref(false)
-  const rectForm = ref({ remark: '', deadline: '' })
-  const loading = ref({ disconnect: false, package: false, rect: false })
-  
-  function fetchOnlineUsers() {
-    ElMessage.success('🔍 已刷新在线用户列表 (示例)')
+
+    <!-- 主体内容 -->
+    <div class="incident-response">
+      <!-- 搜索栏：分字段搜索 -->
+      <div style="display: flex; gap: 12px; margin-bottom: 16px;">
+        <el-input
+          v-model="searchName"
+          placeholder="姓名"
+          clearable
+          style="max-width: 240px;"
+          @keyup.enter="fetchOnlineUsers"
+        />
+        <el-input
+          v-model="searchId"
+          placeholder="学号"
+          clearable
+          style="max-width: 240px;"
+          @keyup.enter="fetchOnlineUsers"
+        />
+        <el-input
+          v-model="searchPhone"
+          placeholder="手机号"
+          clearable
+          style="max-width: 240px;"
+          @keyup.enter="fetchOnlineUsers"
+        />
+        <el-button type="primary" icon="Search" @click="fetchOnlineUsers">搜索</el-button>
+      </div>
+
+      <!-- 在线用户表格 -->
+      <el-table
+        :data="filteredUsers"
+        stripe
+        style="width: 100%"
+        height="300"
+        @row-click="selectUser"
+      >
+        <el-table-column prop="username" label="用户名" width="180" />
+        <el-table-column prop="studentId" label="学号" width="200" />
+        <el-table-column prop="phone" label="手机号" width="200" />
+        <el-table-column prop="ip" label="IP 地址" width="200" />
+        <el-table-column prop="device" label="设备" width="200" />
+        <el-table-column prop="zone" label="区域" />
+        <el-table-column prop="status" label="状态" width="200" />
+      </el-table>
+
+      <!-- 操作区 -->
+      <div v-if="activeUser" class="action-panel">
+        <h3>当前选择：{{ activeUser.username }} ({{ activeUser.ip }})</h3>
+
+        <el-space wrap style="margin-bottom: 12px;">
+          <!-- 深澜套餐调整 -->
+          <el-select v-model="newPackage" placeholder="选择套餐" style="width: 160px;">
+            <el-option label="异常套餐 A（深澜）" value="pkg_abnormal_a" />
+            <el-option label="异常套餐 B（深澜）" value="pkg_abnormal_b" />
+          </el-select>
+          <el-button type="warning" @click="updatePackage" :loading="loading.package">修改深澜套餐</el-button>
+
+          <!-- 派网封堵与解封 -->
+          <el-button type="danger" @click="handleBlock" :loading="loading.block">派网封堵</el-button>
+          <el-button type="success" @click="unblockUser" :loading="loading.unblock">解除封堵</el-button>
+          <el-button type="danger" @click="disconnectUser" :loading="loading.disconnect">下线用户</el-button>
+
+          <!-- 校务网整改 -->
+          <el-button type="primary" @click="openRectification">发起校务网整改</el-button>
+        </el-space>
+      </div>
+    </div>
+
+    <!-- 整改抽屉 -->
+    <el-drawer v-model="rectDrawer" title="发起整改流程" direction="rtl" size="400">
+      <el-form :model="rectForm" label-width="90px">
+        <el-form-item label="整改说明">
+          <el-input v-model="rectForm.remark" type="textarea" rows="4" />
+        </el-form-item>
+        <el-form-item label="截止日期">
+          <el-date-picker v-model="rectForm.deadline" type="date" placeholder="选择日期" />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="rectDrawer = false">取消</el-button>
+        <el-button type="primary" @click="submitRectification" :loading="loading.rect">提交</el-button>
+      </template>
+    </el-drawer>
+  </div>
+</template>
+
+<script setup>
+// 引入 vue 工具和 Element Plus 提示组件
+import { ref, computed } from 'vue'
+import { ElMessage } from 'element-plus'
+
+// 模拟在线用户数据
+const onlineUsers = ref([
+  {
+    username: '张三', ip: '10.1.2.3', device: 'Windows', zone: '教学区', status: '在线', count: 5,
+    studentId: '2021012345', phone: '13800138000'
+  },
+  {
+    username: '李四', ip: '10.1.4.5', device: 'macOS', zone: '生活区', status: '在线', count: 8,
+    studentId: '2021023456', phone: '13900139000'
+  },
+])
+
+// 当前选中用户对象
+const activeUser = ref(null)
+
+// 套餐选择值
+const newPackage = ref('')
+
+// 整改抽屉显示控制
+const rectDrawer = ref(false)
+
+// 整改表单
+const rectForm = ref({ remark: '', deadline: '' })
+
+// 区域选择
+const selectedZone = ref('全部')
+
+// 搜索字段
+const searchName = ref('')
+const searchId = ref('')
+const searchPhone = ref('')
+
+// 多条件过滤用户
+const filteredUsers = computed(() => {
+  let users = onlineUsers.value
+
+  // 区域过滤
+  if (selectedZone.value !== '全部') {
+    users = users.filter(u => u.zone === selectedZone.value)
   }
-  function selectUser(row) {
-    activeUser.value = row
+
+  // 字段匹配
+  if (searchName.value.trim()) {
+    users = users.filter(u => u.username.includes(searchName.value.trim()))
   }
-  function disconnectUser() {
-    if (!activeUser.value) return
-    loading.value.disconnect = true
-    setTimeout(() => {
-      loading.value.disconnect = false
-      ElMessage.success('✅ 用户已下线')
-    }, 1000)
+  if (searchId.value.trim()) {
+    users = users.filter(u => u.studentId.includes(searchId.value.trim()))
   }
-  function updatePackage() {
-    if (!activeUser.value || !newPackage.value) return ElMessage.warning('请选择套餐')
-    loading.value.package = true
-    setTimeout(() => {
-      loading.value.package = false
-      ElMessage.success('📦 套餐已调整')
-    }, 1000)
+  if (searchPhone.value.trim()) {
+    users = users.filter(u => u.phone.includes(searchPhone.value.trim()))
   }
-  function openWarningPreview() {
-    if (!activeUser.value) return ElMessage.warning('请先选择用户')
-    warnDialog.value = true
-  }
-  function openRectification() {
-    if (!activeUser.value) return ElMessage.warning('请先选择用户')
-    rectDrawer.value = true
-  }
-  function submitRectification() {
-    loading.value.rect = true
-    setTimeout(() => {
-      loading.value.rect = false
-      rectDrawer.value = false
-      ElMessage.success('📄 整改流程已发起')
-    }, 1200)
-  }
-  </script>
-  
-  <style scoped>
-  .breadcrumb-wrapper {
-    padding: 10px 16px;
-    background: #fff;
-    border-radius: 6px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-    margin-bottom: 16px; /* 👉 与内容区留白 */
-  }
-  .incident-response-wrapper {
-    padding: 16px;
-  }
-  .incident-response {
-    background: #fff;
-    padding: 16px;
-    border-radius: 8px;
-    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
-  }
-  .action-panel {
-    margin-top: 16px;
-    background: #f9fafc;
-    padding: 12px 16px;
-    border: 1px solid #ebeef5;
-    border-radius: 6px;
-  }
-  .warning-preview {
-    text-align: center;
-  }
-  .warning-preview h2 {
-    margin-bottom: 12px;
-    color: #f56c6c;
-  }
-  </style>
-  
+  return users
+})
+
+// 各类操作加载状态
+const loading = ref({
+  disconnect: false,
+  package: false,
+  rect: false,
+  block: false,
+  unblock: false
+})
+
+// 搜索操作
+function fetchOnlineUsers() {
+  ElMessage.success('🔍 在线用户列表已刷新')
+}
+
+// 选中用户
+function selectUser(row) {
+  activeUser.value = row
+}
+
+// 用户下线操作
+function disconnectUser() {
+  loading.value.disconnect = true
+  setTimeout(() => {
+    loading.value.disconnect = false
+    ElMessage.success('✅ 用户已下线')
+  }, 1000)
+}
+
+// 派网封堵
+function handleBlock() {
+  loading.value.block = true
+  setTimeout(() => {
+    loading.value.block = false
+    ElMessage.success('🚫 封堵已执行')
+  }, 1000)
+}
+
+// 解封操作
+function unblockUser() {
+  loading.value.unblock = true
+  setTimeout(() => {
+    loading.value.unblock = false
+    ElMessage.success('✅ 用户已解封')
+  }, 1000)
+}
+
+// 套餐更新
+function updatePackage() {
+  if (!newPackage.value) return ElMessage.warning('请选择套餐')
+  loading.value.package = true
+  setTimeout(() => {
+    loading.value.package = false
+    ElMessage.success('📦 套餐已修改')
+  }, 1000)
+}
+
+// 打开整改抽屉
+function openRectification() {
+  rectDrawer.value = true
+}
+
+// 提交整改操作
+function submitRectification() {
+  loading.value.rect = true
+  setTimeout(() => {
+    loading.value.rect = false
+    rectDrawer.value = false
+    ElMessage.success('📄 整改流程已发起')
+  }, 1200)
+}
+</script>
+
+<style scoped>
+.breadcrumb-wrapper {
+  padding: 10px 16px;
+  background: #fff;
+  border-radius: 6px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  margin-bottom: 16px;
+}
+.incident-response-wrapper {
+  padding: 16px;
+}
+.incident-response {
+  background: #fff;
+  padding: 16px;
+  border-radius: 8px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+}
+.zone-filter {
+  background: #fff;
+  border-radius: 6px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  padding: 10px 16px;
+}
+.action-panel {
+  margin-top: 16px;
+  background: #f9fafc;
+  padding: 12px 16px;
+  border: 1px solid #ebeef5;
+  border-radius: 6px;
+}
+</style>

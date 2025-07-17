@@ -102,7 +102,7 @@
     chart.setOption({
       tooltip: { trigger: 'item' },
       legend: {
-        top: '5%',
+        top: '3%',
         left: 'center',
         type: 'scroll', // ✅ 防止图例重叠
         textStyle: { fontSize: 12 }
