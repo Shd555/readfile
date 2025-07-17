@@ -60,22 +60,26 @@
   
       <!-- 事件列表 -->
       <el-row :gutter="20" class="tables-row">
-        <el-col :span="24">
-          <el-card shadow="never">
-            <el-table :data="recentEvents" style="width: 100%" height="300">
-              <el-table-column prop="time" label="时间" width="180" />
-              <el-table-column prop="user" label="用户" width="180" />
-              <el-table-column prop="ip" label="IP 地址" width="180" />
-              <el-table-column prop="category" label="翻墙类型" />
-              <el-table-column label="操作" width="120">
-                <template #default="scope">
-                  <el-button size="small" type="danger" @click="block(scope.row)">阻断</el-button>
-                </template>
-              </el-table-column>
-            </el-table>
-          </el-card>
-        </el-col>
-      </el-row>
+      <el-col :span="24">
+        <el-card shadow="never">
+          <el-table :data="recentEvents" style="width: 100%" height="300">
+            <el-table-column prop="time" label="时间" width="180" />
+            <el-table-column prop="user" label="用户" width="180" />
+            <el-table-column prop="ip" label="IP 地址" width="180" />
+            <el-table-column prop="category" label="翻墙类型" width="180" />
+            <!-- 新增列：访问类型 -->
+            <el-table-column prop="pie" label="访问类型" width="180" />
+            <!-- 新增列：学院 -->
+            <el-table-column prop="college" label="所属学院" />
+            <el-table-column label="操作" width="120">
+              <template #default="scope">
+                <el-button size="small" type="danger" @click="block(scope.row)">阻断</el-button>
+              </template>
+            </el-table-column>
+          </el-table>
+        </el-card>
+      </el-col>
+    </el-row>
     </div>
   </template>
   
@@ -111,14 +115,16 @@
   setInterval(() => (now.value = new Date().toLocaleString()), 1_000);
   
   function exportUsers() {
-  const header = '时间,用户,IP地址,翻墙类型,访问类型，所属学院\n';
-  const rows = recentEvents.value.map(u => `${u.time},${u.user},${u.ip},${u.category},${u.pie},${u.college}`).join('\n');
-  const blob = new Blob([header + rows], { type: 'text/csv' });
-  const link = document.createElement('a');
-  link.href = URL.createObjectURL(blob);
-  link.download = `user-info-${new Date().toISOString().slice(0, 10)}.csv`;
-  link.click();
-  URL.revokeObjectURL(link.href);
+  const header = '时间,用户,IP地址,翻墙类型,访问类型,所属学院\n'
+  const rows = recentEvents.value
+    .map(u => `${u.time},${u.user},${u.ip},${u.category},${u.pie},${u.college}`)
+    .join('\n')
+  const blob = new Blob([header + rows], { type: 'text/csv' })
+  const link = document.createElement('a')
+  link.href = URL.createObjectURL(blob)
+  link.download = `user-info-${new Date().toISOString().slice(0, 10)}.csv`
+  link.click()
+  URL.revokeObjectURL(link.href)
 }
 
   /* 实时统计数据 */
